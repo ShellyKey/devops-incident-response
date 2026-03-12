@@ -15,6 +15,8 @@ This project implements an automated incident response system for Kubernetes usi
 
 ## 🧱 Architecture
 Prometheus → Alertmanager → Webhook → Remediation Engine → Kubernetes Action
+<img width="428" height="336" alt="image" src="https://github.com/user-attachments/assets/bf3e800d-7e72-416f-ac4d-4d3bf4dc168f" />
+
 
 ## 🛠 Technologies
 - Kubernetes (Minikube)
