@@ -26,14 +26,25 @@ Prometheus → Alertmanager → Webhook → Remediation Engine → Kubernetes Ac
 - kubectl
 
 ## 👥 Team Roles
-- Member 1: Application & Kubernetes
-- Member 2: Monitoring
-- Member 3: Alerts & Automation
+Member 1: Prometheus & Grafana Setup
+Member 2: Alert Rules Configuration
+Member 3: Remediation Scripts & GitHub
 
 ## 📂 Structure
-- sample-app/ → demo application  
-- monitoring/ → prometheus configs  
-- webhook/ → alert receiver  
+devops-incident-response/
+├── kubernetes/
+│   ├── alert-rules.yaml              # Alert detection rules
+│   └── alertmanager-config.yaml      # Alert routing config
+├── scripts/
+│   └── remediation-scripts.sh        # Auto-remediation scripts
+├── monitoring/
+│   └── prometheus-values.yaml        # Prometheus config
+├── docs/
+│   ├── SETUP.md                      # Installation guide
+│   ├── DEMO_INSTRUCTIONS.md          # How to demo
+│   └── TEAM_WORKFLOW.md              # Git workflow guide
+├── README.md                         # This file
+└── .gitignore                        # Files to ignore 
 
 ## 🚀 How to Run
 1. Start Minikube  
