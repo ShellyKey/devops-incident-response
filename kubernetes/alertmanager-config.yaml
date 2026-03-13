@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yaml: |
+    global:
+      resolve_timeout: 5m
+    
+    route:
+      receiver: 'default'
+      group_by: ['severity']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      
+      routes:
+      - match:
+          incident_type: high_cpu
+        receiver: 'cpu-team'
+      
+      - match:
+          incident_type: high_memory
+        receiver: 'memory-team'
+      
+      - match:
+          incident_type: pod_crash
+        receiver: 'critical-team'
+    
+    receivers:
+    - name: 'default'
+      webhook_configs:
+      - url: 'http://webhook-receiver:5000/alerts'
+    
+    - name: 'cpu-team'
+      webhook_configs:
+      - url: 'http://webhook-receiver:5000/remediate/cpu'
+    
+    - name: 'memory-team'
+      webhook_configs:
+      - url: 'http://webhook-receiver:5000/remediate/memory'
+    
+    - name: 'critical-team'
+      webhook_configs:
+      - url: 'http://webhook-receiver:5000/remediate/critical'
