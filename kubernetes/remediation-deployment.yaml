@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remediation-engine
+  namespace: default
+  labels:
+    app: remediation-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: remediation-engine
+  template:
+    metadata:
+      labels:
+        app: remediation-engine
+    spec:
+      serviceAccountName: remediation-engine-sa
+      containers:
+      - name: remediation-engine
+        image: remediation-engine:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remediation-service
+  namespace: default
+spec:
+  selector:
+    app: remediation-engine
+  ports:
+  - port: 5000
+    targetPort: 5000
+  type: ClusterIP
