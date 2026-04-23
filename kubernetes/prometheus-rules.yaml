@@ -4,49 +4,50 @@ metadata:
   name: custom-alert-rules
   namespace: monitoring
   labels:
-    prometheus: kube-prometheus
+    release: prometheus        # 👈 THIS IS THE CRITICAL FIX
+    app: kube-prometheus-stack
 spec:
   groups:
   - name: kubernetes-alerts
     interval: 30s
     rules:
-    
+
     - alert: HighCPUUsage
-      expr: (sum(rate(container_cpu_usage_seconds_total[5m])) by (pod_name) * 100) > 80
+      expr: (sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (pod) * 100) > 80
       for: 2m
       labels:
         severity: warning
         incident_type: high_cpu
       annotations:
-        summary: "Pod {{ $labels.pod_name }} has HIGH CPU usage!"
-        description: "Pod {{ $labels.pod_name }} CPU is {{ $value }}%"
-    
+        summary: "Pod {{ $labels.pod }} has HIGH CPU usage!"
+        description: "Pod {{ $labels.pod }} CPU is {{ $value }}%"
+
     - alert: HighMemoryUsage
-      expr: (container_memory_usage_bytes / 1000000) > 400
+      expr: (container_memory_working_set_bytes{container!=""} / 1000000) > 400
       for: 2m
       labels:
         severity: critical
         incident_type: high_memory
       annotations:
-        summary: "Pod {{ $labels.pod_name }} has HIGH MEMORY usage!"
+        summary: "Pod {{ $labels.pod }} has HIGH MEMORY usage!"
         description: "Pod memory usage is {{ $value }} MB"
-    
+
     - alert: PodCrashLooping
-      expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+      expr: rate(kube_pod_container_status_restarts_total[15m]) * 60 > 0
       for: 1m
       labels:
         severity: critical
         incident_type: pod_crash
       annotations:
         summary: "Pod {{ $labels.pod }} is CRASHING!"
-        description: "Pod keeps restarting - needs investigation"
-    
+        description: "Pod {{ $labels.pod }} in {{ $labels.namespace }} keeps restarting"
+
     - alert: PodNotReady
-      expr: sum by (pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"}) > 0
+      expr: sum by (pod, namespace) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"}) > 0
       for: 2m
       labels:
         severity: critical
         incident_type: pod_not_ready
       annotations:
         summary: "Pod {{ $labels.pod }} is NOT READY!"
-        description: "Pod has been stuck for 2+ minutes"
+        description: "Pod {{ $labels.pod }} has been stuck for 2+ minutes"

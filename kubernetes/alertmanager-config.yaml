@@ -7,40 +7,42 @@ data:
   alertmanager.yaml: |
     global:
       resolve_timeout: 5m
-    
+
     route:
-      receiver: 'default'
-      group_by: ['severity']
+      receiver: 'default-webhook'
+      group_by: ['alertname', 'namespace', 'severity']
       group_wait: 10s
       group_interval: 10s
       repeat_interval: 1h
-      
+
       routes:
       - match:
+          incident_type: pod_crash
+        receiver: 'remediation-webhook'
+        continue: true
+
+      - match:
+          incident_type: pod_not_ready
+        receiver: 'remediation-webhook'
+        continue: true
+
+      - match:
           incident_type: high_cpu
-        receiver: 'cpu-team'
-      
+        receiver: 'remediation-webhook'
+        continue: true
+
       - match:
           incident_type: high_memory
-        receiver: 'memory-team'
-      
-      - match:
-          incident_type: pod_crash
-        receiver: 'critical-team'
-    
+        receiver: 'remediation-webhook'
+        continue: true
+
     receivers:
-    - name: 'default'
+    - name: 'default-webhook'
       webhook_configs:
-      - url: 'http://webhook-receiver:5000/alerts'
-    
-    - name: 'cpu-team'
+      - url: 'http://remediation-service.default.svc.cluster.local:5000/alert'
+        send_resolved: true
+
+    - name: 'remediation-webhook'
       webhook_configs:
-      - url: 'http://webhook-receiver:5000/remediate/cpu'
-    
-    - name: 'memory-team'
-      webhook_configs:
-      - url: 'http://webhook-receiver:5000/remediate/memory'
-    
-    - name: 'critical-team'
-      webhook_configs:
-      - url: 'http://webhook-receiver:5000/remediate/critical'
+      - url: 'http://remediation-service.default.svc.cluster.local:5000/alert'
+        send_resolved: true
