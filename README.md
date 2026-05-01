@@ -1,4 +1,4 @@
-# devops-incident-response
+# Devops-Incident-Response
 Event Driven Incident Response System - Kubernetes &amp; Prometheus
 
 
